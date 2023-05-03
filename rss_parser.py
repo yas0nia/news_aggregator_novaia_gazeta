@@ -26,7 +26,7 @@ async def rss_parser(httpx_client, source, rss_link, posted_q, n_test_chars=50,
         feed = feedparser.parse(response.text)
 
         for entry in feed.entries[:20][::-1]:
-            if 'summary' not in entry and 'tittle' not in entry:
+            if 'summary' not in entry and 'title' not in entry:
                 continue
 
             summary = entry['summary'] if 'summary' in entry else ''
@@ -59,9 +59,9 @@ async def rss_parser(httpx_client, source, rss_link, posted_q, n_test_chars=50,
 
 if __name__ == "__main__":
 
-    source = 'www.rbc.ru'
+    source = 'bloknot'
     
-    rss_link = 'https://rssexport.rbc.ru/rbcnews/news/20/full.rss',
+    rss_link = 'https://bloknot.ru/rss.xml',
 
     # Очередь из уже опубликованных постов, чтобы их не дублировать
     posted_q = deque(maxlen=20)

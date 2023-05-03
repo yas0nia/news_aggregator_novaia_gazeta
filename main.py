@@ -6,7 +6,6 @@ from telethon import TelegramClient
 
 from telegram_parser import telegram_parser
 from rss_parser import rss_parser
-from bcs_parser import bcs_parser
 from utils import create_logger, get_history, send_error_message
 from config import api_id, api_hash, gazp_chat_id, bot_token
 
@@ -15,39 +14,39 @@ from config import api_id, api_hash, gazp_chat_id, bot_token
 # Можно добавить телеграм канал, rss ссылку или изменить фильтр новостей
 
 telegram_channels = {
-    1099860397: 'https://t.me/rbc_news',
-    1428717522: 'https://t.me/gazprom',
-    1101170442: 'https://t.me/rian_ru',
-    1133408457: 'https://t.me/prime1',
-    1149896996: 'https://t.me/interfaxonline',
-    # 1001029560: 'https://t.me/bcs_express',
-    1203560567: 'https://t.me/markettwits',  # Канал аггрегатор новостей
+    1099860397: 'https://t.me/news_93_ru',
+    1428717522: 'https://t.me/arh_29ru',
+    1223717832: 'https://telegram.me/ngs_news',
 }
 
 rss_channels = {
-    'www.rbc.ru': 'https://rssexport.rbc.ru/rbcnews/news/20/full.rss',
-    'www.ria.ru': 'https://ria.ru/export/rss2/archive/index.xml',
-    'www.1prime.ru': 'https://1prime.ru/export/rss2/index.xml',
-    'www.interfax.ru': 'https://www.interfax.ru/rss.asp',
+    'bloknot': 'https://bloknot.ru/rss.xml',
+    'Saintp': 'https://47news.ru/rss/',
+    'Sakha': 'https://sakhaday.ru/feed/',
+    'Kedr': 'https://kedr.media/feed'
 }
 
 
 def check_pattern_func(text):
-    '''Вибирай только посты или статьи про газпром или газ'''
     words = text.lower().split()
 
     key_words = [
-        'газп',     # газпром
-        'газо',     # газопровод, газофикация...
-        'поток',    # сервеный поток, северный поток 2, южный поток
-        'спг',      # спг - сжиженный природный газ
-        'gazp',
+        'взрыв',
+        'война',    
+        'Донецк',   
+        'насил', 
+        'пожар',
+        'полиц',
+        'протест',
+        'смерт',
+        'теракт',
+        'убий',
+        'убит',
+        'жесток',
+        'украин'
     ]
 
     for word in words:
-        if 'газ' in word and len(word) < 6:  # газ, газу, газом, газа
-            return True
-
         for key in key_words:
             if key in word:
                 return True
@@ -87,7 +86,6 @@ bot.start(bot_token=bot_token)
 
 
 async def send_message_func(text):
-    '''Отправляет посты в канал через бот'''
     await bot.send_message(entity=gazp_chat_id,
                            parse_mode='html', link_preview=False, message=text)
 
@@ -123,17 +121,6 @@ for source, rss_link in rss_channels.items():
 
     loop.create_task(wrapper(source, rss_link))
 
-
-# Добавляй в текущий event_loop кастомный парсер
-async def bcs_wrapper():
-    try:
-        await bcs_parser(httpx_client, posted_q, n_test_chars, timeout,
-                         check_pattern_func, send_message_func, logger)
-    except Exception as e:
-        message = f'&#9888; ERROR: bcs-express.ru parser is down! \n{e}'
-        await send_error_message(message, bot_token, gazp_chat_id, logger)
-
-loop.create_task(bcs_wrapper())
 
 
 try:

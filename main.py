@@ -14,10 +14,33 @@ from config import api_id, api_hash, gazp_chat_id, bot_token
 # Можно добавить телеграм канал, rss ссылку или изменить фильтр новостей
 
 telegram_channels = {
-    1099860397: 'https://t.me/news_93_ru',
-    1428717522: 'https://t.me/arh_29ru',
-    1223717832: 'https://telegram.me/ngs_news',
-}
+        1052226869: '@fontankaspb',
+        1109634603: '@news161ru',
+        1096776982: '@ngs_news',
+        1049795479: '@e1_news',
+        1125426287: '@news_72ru',
+        1056054957: '@ngs24_krsk',
+        1121885240: '@newsv1',
+        1428490399: '@ufa1news',
+        1149575016: '@news63ru',
+        1288401875: '@news_93_ru',
+        1668724834: '@arh_29ru',
+        1154377528: '@ircity_ru',
+        1727657508: '@news116ru',
+        1783879034: '@ngs42',
+        1690565826: '@kurgan_45_RU',
+        1080833375: '@nn_ru',
+        1135152118: '@ngs55news',
+        1142964467: '@news59ru',
+        1734699153: '@sochi1news',
+        1547459883: '@news_86ru',
+        1119067534: '@news_74ru',
+        1003897601: '@chitaru75',
+        1143857056: '@news76',
+        1038402501: '@kommersant',
+        1806946093: '@breakingNews27',
+        1862902168: '@imsocrazyfrog',
+    }
 
 rss_channels = {
     'bloknot': 'https://bloknot.ru/rss.xml',
@@ -67,7 +90,7 @@ amount_messages = 50
 posted_q = deque(maxlen=amount_messages)
 
 # +/- интервал между запросами у rss и кастомного парсеров в секундах
-timeout = 2
+timeout = 120
 
 ###########################
 
@@ -93,10 +116,8 @@ async def send_message_func(text):
 
 
 # Телеграм парсер
-client = telegram_parser('gazp', api_id, api_hash, telegram_channels, posted_q,
-                         n_test_chars, check_pattern_func, send_message_func,
-                         tele_logger, loop)
-
+client = telegram_parser('gazp', api_id, api_hash, telegram_channels, gazp_chat_id, posted_q,
+                         n_test_chars, check_pattern_func, tele_logger, loop)
 
 # Список из уже опубликованных постов, чтобы их не дублировать
 history = loop.run_until_complete(get_history(client, gazp_chat_id,

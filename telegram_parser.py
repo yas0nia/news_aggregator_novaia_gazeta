@@ -1,28 +1,25 @@
 from collections import deque
 from telethon import TelegramClient, events
+from config import api_id, api_hash, gazp_chat_id
 
-from config import api_id, api_hash
 
+def telegram_parser(session, api_id, api_hash, telegram_channels, gazp_chat_id, posted_q,
+                    n_test_chars=50, check_pattern_func=None, logger=None, loop=None):
 
-def telegram_parser(session, api_id, api_hash, telegram_channels, posted_q,
-                    n_test_chars=50, check_pattern_func=None,
-                    send_message_func=None, logger=None, loop=None):
-    '''Телеграм парсер'''
-
-    # Ссылки на телеграмм каналы
     telegram_channels_links = list(telegram_channels.values())
 
     client = TelegramClient(session, api_id, api_hash,
                             base_logger=logger, loop=loop)
     client.start()
-
+    print('Telegram parser started')
     @client.on(events.NewMessage(chats=telegram_channels_links))
     async def handler(event):
-        '''Забирает посты из телеграмм каналов и посылает их в наш канал'''
+        print('New message')
         if event.raw_text == '':
             return
 
         news_text = ' '.join(event.raw_text.split('\n')[:2])
+        print(news_text)
 
         if not (check_pattern_func is None):
             if not check_pattern_func(news_text):
@@ -33,19 +30,9 @@ def telegram_parser(session, api_id, api_hash, telegram_channels, posted_q,
         if head in posted_q:
             return
 
-        source = telegram_channels[event.message.peer_id.channel_id]
-
-        link = f'{source}/{event.message.id}'
-
-        channel = '@' + source.split('/')[-1]
-
-        post = f'<b>{channel}</b>\n{link}\n{news_text}'
-
-        if send_message_func is None:
-            print(post, '\n')
         else:
-            await send_message_func(post)
-
+            await event.message.forward_to(gazp_chat_id)
+       
         posted_q.appendleft(head)
 
     return client
@@ -54,13 +41,36 @@ def telegram_parser(session, api_id, api_hash, telegram_channels, posted_q,
 if __name__ == "__main__":
 
     telegram_channels = {
-        1099860397: 'https://t.me/news_93_ru',
-        1428717522: 'https://t.me/arh_29ru',
+        1052226869: '@fontankaspb',
+        1109634603: '@news161ru',
+        1096776982: '@ngs_news',
+        1049795479: '@e1_news',
+        1125426287: '@news_72ru',
+        1056054957: '@ngs24_krsk',
+        1121885240: '@newsv1',
+        1428490399: '@ufa1news',
+        1149575016: '@news63ru',
+        1288401875: '@news_93_ru',
+        1668724834: '@arh_29ru',
+        1154377528: '@ircity_ru',
+        1727657508: '@news116ru',
+        1783879034: '@ngs42',
+        1690565826: '@kurgan_45_RU',
+        1080833375: '@nn_ru',
+        1135152118: '@ngs55news',
+        1142964467: '@news59ru',
+        1734699153: '@sochi1news',
+        1547459883: '@news_86ru',
+        1119067534: '@news_74ru',
+        1003897601: '@chitaru75',
+        1143857056: '@news76',
+        1038402501: '@kommersant',
+        1806946093: '@breakingNews27',
+        1862902168: '@imsocrazyfrog',
     }
 
-    # Очередь из уже опубликованных постов, чтобы их не дублировать
     posted_q = deque(maxlen=20)
 
-    client = telegram_parser('gazp', api_id, api_hash, telegram_channels, posted_q)
+    client = telegram_parser('gazp', api_id, api_hash, telegram_channels,  gazp_chat_id, posted_q)
 
     client.run_until_disconnected()

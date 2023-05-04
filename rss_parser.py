@@ -10,7 +10,6 @@ from utils import random_user_agent_headers
 async def rss_parser(httpx_client, source, rss_link, posted_q, n_test_chars=50, 
                      timeout=2, check_pattern_func=None, 
                      send_message_func=None, logger=None):
-    '''Парсер rss ленты'''
 
     while True:
         try:
@@ -63,7 +62,6 @@ if __name__ == "__main__":
     
     rss_link = 'https://bloknot.ru/rss.xml',
 
-    # Очередь из уже опубликованных постов, чтобы их не дублировать
     posted_q = deque(maxlen=20)
 
     httpx_client = httpx.AsyncClient()

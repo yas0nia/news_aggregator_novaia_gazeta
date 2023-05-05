@@ -1,5 +1,4 @@
 aiohttp==3.8.4
-cchardet==2.1.7
 chardet==5.1.0
 contourpy==1.0.7
 fastapi==0.95.1

@@ -11,7 +11,7 @@ from config import api_id, api_hash, gazp_chat_id, bot_token
 
 
 ###########################
-# Можно добавить телеграм канал, rss ссылку или изменить фильтр новостей
+# Add any channel you want to parse
 
 telegram_channels = {
         1052226869: '@fontankaspb',
@@ -43,17 +43,19 @@ telegram_channels = {
     }
 
 rss_channels = {
+    '47news': 'https://47news.ru/rss/',
     'bloknot': 'https://bloknot.ru/rss.xml',
-    'Saintp': 'https://47news.ru/rss/',
-    'Sakha': 'https://sakhaday.ru/feed/',
-    'Kedr': 'https://kedr.media/feed'
+    'sakhaday': 'https://sakhaday.ru/feed/',
+    'nozh': 'https://knife.media/feed/',
+    'kedr': 'https://kedr.media/feed',
+    'stolica-s': 'https://stolica-s.su/feed',
 }
 
 
 def check_pattern_func(text):
     words = text.lower().split()
 
-    key_words = [
+    keywords = [
         'взрыв',
         'война',    
         'Донецк',   
@@ -70,7 +72,7 @@ def check_pattern_func(text):
     ]
 
     for word in words:
-        for key in key_words:
+        for key in keywords:
             if key in word:
                 return True
 
@@ -78,18 +80,18 @@ def check_pattern_func(text):
 
 
 ###########################
-# Если у парсеров много ошибок или появляются повторные новости
+# Troubleshooting duplicate posts
 
-# 50 первых символов от поста - это ключ для поиска повторных постов
+# key to search for duplicate posts
 n_test_chars = 50
 
-# Количество уже опубликованных постов, чтобы их не повторять
+# Amount of already published posts to check for duplicates
 amount_messages = 50
 
-# Очередь уже опубликованных постов
+# The queue of already published posts
 posted_q = deque(maxlen=amount_messages)
 
-# +/- интервал между запросами у rss и кастомного парсеров в секундах
+# +/- The interval in seconds for making a request to the rss channel
 timeout = 120
 
 ###########################
@@ -115,11 +117,9 @@ async def send_message_func(text):
     logger.info(text)
 
 
-# Телеграм парсер
 client = telegram_parser('gazp', api_id, api_hash, telegram_channels, gazp_chat_id, posted_q,
                          n_test_chars, check_pattern_func, tele_logger, loop)
 
-# Список из уже опубликованных постов, чтобы их не дублировать
 history = loop.run_until_complete(get_history(client, gazp_chat_id,
                                               n_test_chars, amount_messages))
 
@@ -127,7 +127,6 @@ posted_q.extend(history)
 
 httpx_client = httpx.AsyncClient()
 
-# Добавляй в текущий event_loop rss парсеры
 for source, rss_link in rss_channels.items():
 
     # https://docs.python-guide.org/writing/gotchas/#late-binding-closures
@@ -145,7 +144,6 @@ for source, rss_link in rss_channels.items():
 
 
 try:
-    # Запускает все парсеры
     client.run_until_disconnected()
 
 except Exception as e:
